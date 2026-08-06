@@ -7,7 +7,7 @@
 <meta name="description" content="Inscrição para o evento Além da Norma, uma realização Kaluf & Gomes Soluções Empresariais.">
 <meta property="og:title" content="Além da Norma — 20 de agosto, Anfiteatro da OAB Franca">
 <meta property="og:description" content="Transforme a NR-1 de obrigação legal no maior motor de lucro da sua empresa. Vagas limitadas.">
-<meta property="og:image" content="assets/arte-evento.jpg">
+<meta property="og:image" content="arte-evento.jpg">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,7 +77,7 @@
   .hero-bg{
     position:absolute;
     inset: -4%;
-    background-image: url('assets/hero-bg.jpg');
+    background-image: url('hero-bg.jpg');
     background-size: cover;
     background-position: center;
     z-index:0;
@@ -449,7 +449,7 @@
 
   <header>
     <div class="brand">
-      <img src="assets/logo-icone-kg.png" alt="Kaluf & Gomes">
+      <img src="logo-icone-kg.png" alt="Kaluf & Gomes">
       <span class="brand-name">Kaluf &amp; Gomes · Soluções Empresariais</span>
     </div>
   </header>
@@ -487,27 +487,27 @@
     <p class="speakers-title">Quem vai estar com você nessa manhã</p>
     <ul class="speakers">
       <li>
-        <img class="speaker-photo" src="assets/speakers/telma.jpg" alt="Telma Rodrigues">
+        <img class="speaker-photo" src="telma.jpg" alt="Telma Rodrigues">
         <div><strong>Telma Rodrigues</strong><span>Consultora de Governança e Conselheira de Remuneração</span></div>
       </li>
       <li>
-        <img class="speaker-photo" src="assets/speakers/cristiane.jpg" alt="Cristiane Olegário">
+        <img class="speaker-photo" src="cristiane.jpg" alt="Cristiane Olegário">
         <div><strong>Cristiane Olegário</strong><span>Doutora em Serviço Social, especialista em ESG</span></div>
       </li>
       <li>
-        <img class="speaker-photo" src="assets/speakers/luiz-lago.jpg" alt="Dr. Luiz Lago">
+        <img class="speaker-photo" src="luiz-lago.jpg" alt="Dr. Luiz Lago">
         <div><strong>Dr. Luiz Lago</strong><span>Advogado Trabalhista</span></div>
       </li>
       <li>
-        <img class="speaker-photo" src="assets/speakers/rafael.jpg" alt="Rafael Garcia">
+        <img class="speaker-photo" src="rafael.jpg" alt="Rafael Garcia">
         <div><strong>Rafael Garcia</strong><span>Produto, Metodologia e Evolução da NR-1</span></div>
       </li>
       <li>
-        <img class="speaker-photo" src="assets/speakers/fabio.jpg" alt="Fábio Alexandre Moreira">
+        <img class="speaker-photo" src="fabio.jpg" alt="Fábio Alexandre Moreira">
         <div><strong>Fábio Alexandre Moreira</strong><span>Implementação, Compliance e Governança da NR-1</span></div>
       </li>
       <li>
-        <img class="speaker-photo" src="assets/speakers/raquel.jpg" alt="Raquel Fanan">
+        <img class="speaker-photo" src="raquel.jpg" alt="Raquel Fanan">
         <div><strong>Raquel Fanan</strong><span>Consultora de Cultura Organizacional</span></div>
       </li>
     </ul>
@@ -751,7 +751,7 @@
       const base = window.location.href.replace(/index\.html.*$/, '').replace(/\/?$/, '/');
       const checkinUrl = base + 'checkin.html?id=' + novaInscricaoRef.key;
       const qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(checkinUrl);
-      const artImageUrl = base + 'assets/arte-evento.jpg';
+      const artImageUrl = base + 'arte-evento.jpg';
 
       document.getElementById('qrImage').src = qrImageUrl;
 
