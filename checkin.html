@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-in · Além da Norma</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1F35; --navy-panel:#12293F; --gold:#B8976A; --gold-soft:#D9C3A0;
+    --white:#fff; --ink-soft:rgba(255,255,255,.7); --ink-faint:rgba(255,255,255,.45);
+    --success:#4CAF7B; --error:#E2725B; --warn:#D9A441;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--navy); color:#fff; font-family:'Inter', sans-serif; }
+  .wrap{ max-width:480px; margin:0 auto; padding:20px 20px 60px; }
+  header{ display:flex; align-items:center; gap:10px; padding:12px 0 20px; }
+  header svg, header img{ width:24px; height:24px; flex-shrink:0; display:block; }
+  header span{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0 0 4px; }
+  .counter{ font-size:13px; color:var(--gold-soft); margin-bottom:18px; }
+  #reader{ border-radius:6px; overflow:hidden; border:1px solid rgba(184,151,106,.3); min-height: 60px; }
+  #reader p{ padding:16px; font-size:13px; color:var(--ink-faint); margin:0; }
+  .manual{ margin-top:18px; display:flex; gap:8px; }
+  .manual input{ flex:1; background:var(--navy-panel); border:1px solid rgba(255,255,255,.12); border-radius:4px; color:#fff; padding:11px 12px; font-size:14px; }
+  .manual button{ background:var(--gold); color:var(--navy); border:none; border-radius:4px; padding:11px 16px; font-weight:600; font-size:13px; cursor:pointer; }
+  .result{ margin-top:22px; padding:20px; border-radius:6px; display:none; }
+  .result.show{ display:block; }
+  .result.ok{ background:rgba(76,175,123,.12); border:1px solid var(--success); }
+  .result.warn{ background:rgba(217,164,65,.12); border:1px solid var(--warn); }
+  .result.error{ background:rgba(226,114,91,.12); border:1px solid var(--error); }
+  .result h2{ font-family:'Fraunces', serif; font-size:19px; margin:0 0 6px; }
+  .result p{ margin:2px 0; font-size:13.5px; color:var(--ink-soft); }
+  .result .status{ font-size:12px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px; display:inline-block; }
+  .ok .status{ color:var(--success); }
+  .warn .status{ color:var(--warn); }
+  .error .status{ color:var(--error); }
+  .confirm-btn{ margin-top:14px; width:100%; background:var(--gold); color:var(--navy); border:none; border-radius:4px; padding:12px; font-weight:600; font-size:14px; cursor:pointer; }
+  .again{ margin-top:10px; width:100%; background:transparent; color:var(--ink-soft); border:1px solid rgba(255,255,255,.2); border-radius:4px; padding:10px; font-size:13px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="assets/logo-icone-kg.png" alt="Kaluf & Gomes">
+    <span>Kaluf &amp; Gomes</span>
+  </header>
+
+  <h1>Check-in — Além da Norma</h1>
+  <p class="counter" id="counter">Carregando contagem...</p>
+
+  <div id="reader"></div>
+
+  <div class="manual">
+    <input type="text" id="manualId" placeholder="Colar código manualmente">
+    <button id="manualBtn">Buscar</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+  // ⚠️ Use a MESMA config do projeto Firebase do index.html
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const REF_PATH = 'inscricoesAlemDaNorma';
+
+  const resultEl = document.getElementById('result');
+  const counterEl = document.getElementById('counter');
+  let scannerPaused = false;
+
+  // contador ao vivo de confirmados
+  db.ref(REF_PATH).on('value', function(snap){
+    let total = 0, confirmados = 0;
+    snap.forEach(function(child){
+      total++;
+      if (child.val().checkin) confirmados++;
+    });
+    counterEl.textContent = confirmados + ' confirmados de ' + total + ' inscritos';
+  });
+
+  function extractId(text){
+    try{
+      const url = new URL(text);
+      const id = url.searchParams.get('id');
+      if (id) return id;
+    }catch(e){ /* não é uma URL, trata como texto puro */ }
+    return text.trim();
+  }
+
+  function renderResult(state, data, id){
+    resultEl.className = 'result show ' + state;
+
+    if (state === 'error'){
+      resultEl.innerHTML =
+        '<span class="status">Não encontrado</span>' +
+        '<h2>QR inválido</h2>' +
+        '<p>Este código não corresponde a nenhuma inscrição.</p>' +
+        '<button class="again" onclick="resetScan()">Escanear novamente</button>';
+      return;
+    }
+
+    const jaConfirmado = state === 'warn';
+    resultEl.innerHTML =
+      '<span class="status">' + (jaConfirmado ? 'Já validado' : 'Pronto para confirmar') + '</span>' +
+      '<h2>' + data.nomeCompleto + '</h2>' +
+      '<p>' + data.empresa + ' · ' + data.cargo + '</p>' +
+      (jaConfirmado ? '<p>Check-in às ' + new Date(data.checkinTimestamp).toLocaleTimeString('pt-BR') + '</p>' : '') +
+      (jaConfirmado ? '' : '<button class="confirm-btn" id="confirmBtn">Confirmar entrada</button>') +
+      '<button class="again" onclick="resetScan()">Escanear novamente</button>';
+
+    if (!jaConfirmado){
+      document.getElementById('confirmBtn').addEventListener('click', function(){
+        db.ref(REF_PATH + '/' + id).update({
+          checkin: true,
+          checkinTimestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(function(){
+          data.checkin = true;
+          data.checkinTimestamp = Date.now();
+          renderResult('ok', data, id);
+        });
+      });
+    }
+  }
+
+  function lookup(rawText){
+    const id = extractId(rawText);
+    if (!id) return;
+    db.ref(REF_PATH + '/' + id).once('value').then(function(snap){
+      if (!snap.exists()){
+        renderResult('error');
+        return;
+      }
+      const data = snap.val();
+      renderResult(data.checkin ? 'warn' : 'ok', data, id);
+    });
+  }
+
+  window.resetScan = function(){
+    resultEl.classList.remove('show');
+    scannerPaused = false;
+  };
+
+  document.getElementById('manualBtn').addEventListener('click', function(){
+    const val = document.getElementById('manualId').value.trim();
+    if (val) lookup(val);
+  });
+
+  // link direto (?id=...) — abre o resultado sem precisar da câmera,
+  // útil quando o app de câmera nativo do celular já reconhece o QR como link
+  const params = new URLSearchParams(window.location.search);
+  const directId = params.get('id');
+  if (directId) lookup(directId);
+
+  // scanner por câmera, para a equipe bipar continuamente na entrada
+  const html5QrCode = new Html5Qrcode("reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 240 },
+    function(decodedText){
+      if (scannerPaused) return;
+      scannerPaused = true;
+      lookup(decodedText);
+    },
+    function(){ /* frame sem leitura, ignora */ }
+  ).catch(function(err){
+    console.error('Não foi possível iniciar a câmera', err);
+    document.getElementById('reader').innerHTML = '<p>Câmera indisponível neste dispositivo/navegador. Use a busca manual abaixo.</p>';
+  });
+</script>
+</body>
+</html>
