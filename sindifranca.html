@@ -634,6 +634,7 @@
     <p class="brand-line">Kaluf &amp; Gomes Soluções Empresariais · Franca / Patrocínio Paulista, SP</p>
     <p>Apoio: OAB São Paulo – Subseção Franca</p>
     <p>Patrocínio: Propagare.IA · Travessia · MarkUP · Lago | Lima Advogados</p>
+    <p>Já se inscreveu? <a href="meu-qrcode.html">Recupere seu QR Code aqui</a></p>
     <p>Dúvidas? WhatsApp <a href="https://wa.me/5516993030504" target="_blank" rel="noopener">(16) 99303-0504</a></p>
   </footer>
 
@@ -810,6 +811,7 @@
       }).catch(function(emailErr){
         // não bloqueia a inscrição (já salva no Firebase) se o e-mail falhar
         console.error('Falha ao enviar e-mail de confirmação:', emailErr);
+        alert('ERRO AO ENVIAR E-MAIL (temporário, para diagnóstico): ' + JSON.stringify(emailErr));
       });
     }).catch(function(err){
       console.error(err);
