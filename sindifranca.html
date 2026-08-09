@@ -407,6 +407,23 @@
     opacity: 0.6;
     cursor: default;
   }
+  .cal-btn{
+    display:block;
+    margin-top: 16px;
+    width:100%;
+    background: transparent;
+    color: var(--gold-soft);
+    border: 1px solid rgba(184,151,106,0.35);
+    border-radius: var(--radius);
+    padding: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-box;
+    transition: background 0.15s ease;
+  }
+  .cal-btn:hover{ background: rgba(184,151,106,0.08); }
 
   .form-status{
     margin-top: 14px;
@@ -608,6 +625,7 @@
       <canvas id="qrCanvas" style="display:none;"></canvas>
       <img id="qrImage" alt="QR Code de acesso ao evento" width="180" height="180" style="margin: 18px auto 6px; display:block; border-radius:4px;">
       <p style="font-size:12px;color:var(--ink-faint);">Apresente este código na entrada do Além da Norma.</p>
+      <a id="calBtn" class="cal-btn" href="#" target="_blank" rel="noopener">+ Adicionar à Google Agenda</a>
     </div>
 
   </section>
@@ -642,9 +660,9 @@
   const db = firebase.database();
 
   // ⚠️ Dados do EmailJS (emailjs.com → Account → General, e seu Service/Template).
-  const EMAILJS_PUBLIC_KEY = 'SUA_PUBLIC_KEY';
-  const EMAILJS_SERVICE_ID = 'SEU_SERVICE_ID';
-  const EMAILJS_TEMPLATE_ID = 'SEU_TEMPLATE_ID';
+  const EMAILJS_PUBLIC_KEY = 'VbuF0HRWclBD8edWs';
+  const EMAILJS_SERVICE_ID = 'service_9lhf5uw';
+  const EMAILJS_TEMPLATE_ID = 'tmy93g9';
   emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
   const form = document.getElementById('inscricaoForm');
@@ -770,6 +788,16 @@
 
       document.getElementById('qrImage').src = qrImageUrl;
 
+      // 20/08/2026, 7h30 às 11h, horário de Brasília
+      const calendarUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        + '&text=' + encodeURIComponent('Além da Norma')
+        + '&dates=20260820T073000/20260820T110000'
+        + '&ctz=' + encodeURIComponent('America/Sao_Paulo')
+        + '&details=' + encodeURIComponent('Evento Kaluf & Gomes sobre NR-1, cultura organizacional e gestão de pessoas. Café no local. Apresente o QR Code de inscrição na entrada.')
+        + '&location=' + encodeURIComponent('Anfiteatro da OAB – Subseção Franca, Franca - SP');
+
+      document.getElementById('calBtn').href = calendarUrl;
+
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
         to_email: email,
         to_name: nome,
@@ -777,7 +805,8 @@
         cargo: cargo,
         qr_image_url: qrImageUrl,
         art_image_url: artImageUrl,
-        checkin_url: checkinUrl
+        checkin_url: checkinUrl,
+        calendar_url: calendarUrl
       }).catch(function(emailErr){
         // não bloqueia a inscrição (já salva no Firebase) se o e-mail falhar
         console.error('Falha ao enviar e-mail de confirmação:', emailErr);
